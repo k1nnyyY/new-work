@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { useTheme } from "../ThemeContext";
 import { useNavigate } from "react-router-dom";
-import logBackground from '../assets/Logo-light.svg';
+import logBackground from "../assets/Logo-light.svg";
 
 const Background = styled.div`
   height: 100vh;
@@ -30,7 +30,6 @@ const Container = styled.div`
   backdrop-filter: blur(15px); /* Размытие фона */
   -webkit-backdrop-filter: blur(15px); /* Для Safari */
 `;
-
 
 const Image = styled.div`
   width: 100px; /* Ширина логотипа */
@@ -68,13 +67,13 @@ const Button = styled.button`
   width: 85%;
   border: none;
   border-radius: 15px;
-  background: #1C0019;
+  background: #1c0019;
   color: #fff;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
   transition: background 0.3s ease;
-  margin:25% 0 25% 0 ;
+  margin: 25% 0 25% 0;
 `;
 const WelcomePage = () => {
   const { toggleTheme } = useTheme();
@@ -86,21 +85,40 @@ const WelcomePage = () => {
   const handleNextk = () => {
     navigate("/profile");
   };
-  var WebApp = window.Telegram.WebApp;
 
-  WebApp.showAlert(`Добро пожаловать, @${WebApp.WebAppUser.username}.`);
+  const tg = window.Telegram.WebApp;
+  const user = tg.initDataUnsafe?.user || null;
+
+  if (user) {
+    console.log("User ID:", user.id); // Уникальный идентификатор
+    console.log("Username:", user.username); // Имя пользователя
+    console.log("First Name:", user.first_name); // Имя
+    console.log("Last Name:", user.last_name); // Фамилия
+  }
 
   return (
     <Background>
       <Container>
-      <Image />
+        <Image />
         <TextWrapper>
-        <Title>Добро пожаловать в Angelvoice!</Title>
-        <Text>
-          Избавьтесь от стресса и тревог с помощью медитаций и глубоких техник
-          релаксации. В нашем приложении собраны инструменты, которые помогут
-          услышать себя.
-        </Text>
+          <p>
+            <strong>Ваш ID:</strong> {user.id}
+          </p>
+          <p>
+            <strong>Имя:</strong> {user.first_name}
+          </p>
+          <p>
+            <strong>Фамилия:</strong> {user.last_name || "Не указана"}
+          </p>
+          <p>
+            <strong>Username:</strong> {user.username || "Не указан"}
+          </p>
+          <Title>Добро пожаловать в Angelvoice!</Title>
+          <Text>
+            Избавьтесь от стресса и тревог с помощью медитаций и глубоких техник
+            релаксации. В нашем приложении собраны инструменты, которые помогут
+            услышать себя.
+          </Text>
         </TextWrapper>
         <Button onClick={handleNext}>Далее</Button>
         <button onClick={handleNextk}>kdodd</button>
