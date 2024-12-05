@@ -38,6 +38,7 @@ app.post('/api/auth/verify', async (req, res) => {
   if (!initData) {
     return res.status(400).json({ success: false, message: 'No initData' });
   }
+  
 
   if (checkSignature(initData, BOT_TOKEN)) {
     const userData = Object.fromEntries(new URLSearchParams(initData));
