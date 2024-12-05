@@ -21,15 +21,16 @@ const BOT_TOKEN = '8020257687:AAFTfQoThU4qI_DJjE8S4TEnzGBm-AKgVhw';
 // Проверка подписи Telegram
 const checkSignature = (initData, botToken) => {
   const secretKey = crypto.createHash("sha256").update(botToken).digest();
-  const data = initData
+  const dataCheckString = initData
     .split("&")
     .filter((entry) => !entry.startsWith("hash="))
     .sort()
     .join("\n");
-  const hash = crypto.createHmac("sha256", secretKey).update(data).digest("hex");
+  const hash = crypto.createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
   const receivedHash = new URLSearchParams(initData).get("hash");
   return hash === receivedHash;
 };
+
 
 // Верификация пользователя
 app.post("/api/auth/verify", async (req, res) => {
@@ -88,54 +89,55 @@ app.post("/api/auth/verify", async (req, res) => {
 
 
 app.post("/api/users", async (req, res) => {
-  console.log("Запрос получен на /api/users");
-  console.log("Данные от клиента:", req.body);
+  const { initData, userName, dayOfBirth, Gender, maritalStatus, WhatIsJob, yourObjective } = req.body;
 
-  const {
-    userName,
-    dayOfBirth,
-    Gender,
-    maritalStatus,
-    WhatIsJob,
-    yourObjective,
-  } = req.body;
-
-  // Проверка обязательных полей
-  if (!userName || !dayOfBirth || Gender === undefined) {
-    console.error("Ошибка валидации: отсутствуют обязательные поля.");
-    return res.status(400).json({
-      error: "Обязательные поля: userName, dayOfBirth, Gender должны быть заполнены.",
-    });
+  // Проверка наличия initData
+  if (!initData) {
+    return res.status(400).json({ error: "initData отсутствует." });
   }
 
-  // Формирование данных для базы данных
+  // Проверка подписи initData
+  if (!checkSignature(initData, BOT_TOKEN)) {
+    return res.status(403).json({ error: "Неверная подпись Telegram." });
+  }
+
+  // Получаем данные пользователя из initData
+  const user = Object.fromEntries(new URLSearchParams(initData));
+
+  // Проверка обязательных данных квиза
+  if (!userName || !dayOfBirth || Gender === undefined) {
+    return res.status(400).json({ error: "Некоторые обязательные поля не заполнены." });
+  }
+
+  // Данные для записи в базу
   const payload = {
+    id: user.id, // ID из Telegram
     username: userName,
     dayofbirth: dayOfBirth,
     gender: Gender,
-    maritalstatus: maritalStatus || "Не указано", // Значение по умолчанию
-    whatisjob: WhatIsJob || "Не указано", // Значение по умолчанию
-    yourobjective: yourObjective || "Не указаны цели", // Значение по умолчанию
+    maritalstatus: maritalStatus || "Не указано",
+    whatisjob: WhatIsJob || "Не указано",
+    yourobjective: yourObjective || "Не указаны цели",
     star: 0, // Значение по умолчанию
     subscription: false, // Значение по умолчанию
-    expiredsubscription: "2000-01-01", // Дата в прошлом
+    expiredsubscription: "2000-01-01", // Просроченная подписка
   };
 
-  console.log("Данные для вставки в базу данных:", payload);
+  console.log("Сохраняем данные пользователя в базу:", payload);
 
   try {
+    // Сохраняем данные в базе
     const { data, error } = await supabase.from("users").insert([payload]);
 
     if (error) {
-      console.error("Ошибка при вставке в базу данных:", error);
-      return res.status(400).json({ error: error.message });
+      console.error("Ошибка базы данных:", error);
+      return res.status(500).json({ error: "Ошибка базы данных." });
     }
 
-    console.log("Данные успешно сохранены в базе:", data);
-    res.status(201).json(data);
+    res.status(201).json({ message: "Пользователь успешно добавлен.", user: data });
   } catch (err) {
-    console.error("Неизвестная ошибка на сервере:", err);
-    res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    console.error("Ошибка сервера:", err);
+    res.status(500).json({ error: "Внутренняя ошибка сервера." });
   }
 });
 

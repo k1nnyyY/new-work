@@ -135,8 +135,18 @@ const QuizPage = () => {
     if (step < 6) {
       setStep(step + 1);
     } else {
-      // Реальные данные для отправки
+      const telegram = window.Telegram?.WebApp;
+      const initData = telegram ? telegram.initData : null;
+
+      if (!initData) {
+        alert("Ошибка: initData отсутствует.");
+        return;
+      }
+
+      // Формируем данные для отправки
+
       const payload = {
+        initData,
         userName: name, // Имя пользователя
         dayOfBirth: birthdate, // Дата рождения
         Gender: gender === "Мужской" ? 1 : 2, // Пол
@@ -166,6 +176,8 @@ const QuizPage = () => {
   
         const result = await response.json();
         console.log("Данные успешно сохранены:", result);
+        alert("Квиз успешно завершён!");
+          navigate("/success");
       } catch (error) {
         console.error("Ошибка на фронтенде:", error.message);
       }
