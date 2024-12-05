@@ -1,10 +1,8 @@
 const TelegramBot = require("node-telegram-bot-api");
 
-// Ваш токен бота
-const TOKEN = "7718882241:AAG9ABx0ggQMUNRAtkKkTRgWhb8IfTIB_i0";
+const TOKEN = "8020257687:AAFTfQoThU4qI_DJjE8S4TEnzGBm-AKgVhw";
 const bot = new TelegramBot(TOKEN, { polling: true });
 
-// Обработка команды /start
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
 
@@ -14,7 +12,7 @@ bot.onText(/\/start/, (msg) => {
         [
           {
             text: "Открыть Web App",
-            web_app: { url: "https://new-work-kohl.vercel.app" }, // Ссылка на ваш развернутый React
+            web_app: { url: "https://new-work-kohl.vercel.app" },
           },
         ],
       ],

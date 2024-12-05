@@ -1,4 +1,4 @@
-import lightBackground from './assets/images (1).jpeg';
+import lightBackground from './assets/1103_beach-sea-sunset_1640x2360.jpg';
 import darkBackground from './assets/winter.jpeg';
 
 export const lightTheme = {
@@ -6,8 +6,9 @@ export const lightTheme = {
   backgroundSize: "cover",
   color: "#000",
   inputBackground: "rgba(255, 255, 255, 0.8)",
-  buttonBackground: "#6B46C1",
+  buttonBackground: "#000",
   buttonColor: "#FFF",
+  isLightTheme: true,
 };
 
 export const darkTheme = {
@@ -16,5 +17,7 @@ export const darkTheme = {
   color: "#FFF",
   inputBackground: "rgba(0, 0, 0, 0.8)",
   buttonBackground: "#FFF",
-  buttonColor: "#6B46C1",
+  buttonColor: "#000",
+  isLightTheme: false,
 };
+

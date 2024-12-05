@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { useTheme } from "../ThemeContext";
 import { useNavigate } from "react-router-dom";
+import logBackground from '../assets/Logo-light.svg';
 
 const Background = styled.div`
   height: 100vh;
@@ -31,12 +32,14 @@ const Container = styled.div`
 `;
 
 
-const Logo = styled.div`
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 50%;
-  color: ${({ theme }) => theme.color};
-  text-transform: uppercase;
+const Image = styled.div`
+  width: 100px; /* Ширина логотипа */
+  height: 100px; /* Высота логотипа */
+  margin: 0 auto 50%; /* Центрирование по горизонтали и отступ снизу */
+  background-image: url(${logBackground}); /* Указание изображения */
+  background-size: contain; /* Адаптировать изображение */
+  background-repeat: no-repeat; /* Избегать повторения */
+  background-position: center; /* Центрировать изображение */
 `;
 
 const Title = styled.h1`
@@ -62,7 +65,7 @@ const TextWrapper = styled.div`
 `;
 const Button = styled.button`
   padding: 15px;
-  width: 70%;
+  width: 85%;
   border: none;
   border-radius: 15px;
   background: #1C0019;
@@ -78,13 +81,13 @@ const WelcomePage = () => {
   const navigate = useNavigate();
 
   const handleNext = () => {
-    navigate("/quiz"); // Переход на страницу /quiz
+    navigate("/quiz");
   };
 
   return (
     <Background>
       <Container>
-        <Logo>Angelvoice</Logo>
+      <Image />
         <TextWrapper>
         <Title>Добро пожаловать в Angelvoice!</Title>
         <Text>

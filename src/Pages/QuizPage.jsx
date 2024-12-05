@@ -6,7 +6,7 @@ const Container = styled.div`
   max-width: 360px;
   padding: 30px 20px;
   text-align: center;
-  color: #fff; /* Белый текст */
+  color: ${({ theme }) => theme.color};
   border-radius: 20px;
   box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
   position: fixed;
@@ -27,19 +27,19 @@ const Header = styled.div`
 
 const Title = styled.h2`
   font-size: 100%;
-  color: #fff;
+  color: ${({ theme }) => theme.color};
   font-weight: 550; /* Жирный текст для заголовка */
 `;
 
 const Step = styled.p`
   font-size: 14px;
-  color: #fff;
+  color: ${({ theme }) => theme.color};
   font-weight: 400; /* Легкий текст для шага */
   margin: 0; /* Убираем стандартные отступы */
 `;
 const Label = styled.label`
   font-size: 110%;
-  color: #fff;
+  color: ${({ theme }) => theme.color};
   display: block;
   margin-bottom: 7%;
   font-weight: 550;
@@ -52,12 +52,12 @@ const Input = styled.input`
   border-radius: 20px;
   border: none; 
   background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  color: ${({ theme }) => theme.color};
   font-size: 16px;
   font-weight: 100;
 
   &::placeholder {
-    color: #fff;
+  color: ${({ theme }) => theme.color};
     font-weight: 100;
   }
 
@@ -72,14 +72,16 @@ const Button = styled.button`
   width: 70%;
   border: none;
   border-radius: 15px;
-  background: #1C0019;
-  color: #fff;
+  background: ${({ theme }) =>
+    theme.isLightTheme ? "#000" : theme.buttonBackground};
+  color: ${({ theme }) => theme.buttonColor};
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  transition: background 0.3s ease;
-  margin:25% 0 10% 0 ;
+  transition: background 0.3s ease, color 0.3s ease;
+  margin: 25% 0 10% 0;
 `;
+
 const RadioGroup = styled.div`
   display: flex;
   flex-direction: column;
@@ -88,7 +90,7 @@ const RadioGroup = styled.div`
 
   label {
     font-size: 16px;
-    color: #fff;
+  color: ${({ theme }) => theme.color};
     margin: 5px 0;
   }
 
@@ -105,7 +107,7 @@ const CheckboxGroup = styled.div`
 
   label {
     font-size: 16px;
-    color: #fff;
+  color: ${({ theme }) => theme.color};
     margin: 5px 0;
   }
 
@@ -127,15 +129,6 @@ const QuizPage = () => {
   const [gender, setGender] = useState("");
   const [relationshipStatus, setRelationshipStatus] = useState("");
 
-  // Фоны для каждого шага
-  const backgrounds = [
-    "/path/to/step1.png",
-    "/path/to/step2.png",
-    "/path/to/step3.png",
-    "/path/to/step4.png",
-    "/path/to/step5.png",
-    "/path/to/step6.png",
-  ];
 
   const handleNext = () => {
     if (step < 6) setStep(step + 1);

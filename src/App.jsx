@@ -5,6 +5,7 @@ import { GlobalStyles } from "./GlobalStyles";
 import { lightTheme, darkTheme } from "./theme";
 import WelcomePage from "./Pages/WelcomePage";
 import QuizPage from "./Pages/QuizPage";
+import ProfilePage from "./Pages/ProfilePage";
 
 const App = () => {
   const [isDarkMode, setIsDarkMode] = React.useState(false);
@@ -20,6 +21,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<WelcomePage />} />
           <Route path="/quiz" element={<QuizPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </Router>
       <button
