@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { useTheme } from "../ThemeContext";
+import { useNavigate } from "react-router-dom";
 
 const Background = styled.div`
   height: 100vh;
@@ -74,6 +75,11 @@ const Button = styled.button`
 `;
 const WelcomePage = () => {
   const { toggleTheme } = useTheme();
+  const navigate = useNavigate();
+
+  const handleNext = () => {
+    navigate("/quiz"); // Переход на страницу /quiz
+  };
 
   return (
     <Background>
@@ -87,7 +93,7 @@ const WelcomePage = () => {
           услышать себя.
         </Text>
         </TextWrapper>
-        <Button>Далее</Button>
+        <Button onClick={handleNext}>Далее</Button>
       </Container>
     </Background>
   );
