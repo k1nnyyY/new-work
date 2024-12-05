@@ -167,42 +167,62 @@ const ProfilePage = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [logMessages, setLogMessages] = useState([]);
+
+  const log = (message) => {
+    setLogMessages((prevLogs) => [...prevLogs, message]);
+  };
 
   useEffect(() => {
     // Проверяем наличие initData в Telegram Web App
-    const initData = window.Telegram?.WebApp?.initData;
-
-    if (initData) {
-      // Отправляем данные для верификации на сервер
-      fetch("http://localhost:9000/api/auth/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ initData }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            console.log("Пользователь верифицирован:", data.user);
-            setUserData(data.user); // Сохраняем данные пользователя
-            setIsVerified(true);
-          } else {
-            console.error("Ошибка верификации:", data.message);
-            setErrorMessage("Не удалось верифицировать пользователя.");
-          }
-        })
-        .catch((error) => {
-          console.error("Ошибка запроса к серверу:", error.message);
-          setErrorMessage("Ошибка сервера. Попробуйте снова.");
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } else {
-      console.error("initData отсутствует в Telegram Web App");
-      setErrorMessage("Telegram Web App не предоставил данные для верификации.");
+    const telegram = window.Telegram?.WebApp;
+    if (!telegram) {
+      log("Telegram WebApp объект недоступен.");
+      setErrorMessage("Telegram WebApp не доступен.");
       setLoading(false);
+      return;
     }
+
+    const initData = telegram.initData;
+    if (!initData) {
+      log("initData отсутствует в Telegram WebApp.");
+      setErrorMessage("initData отсутствует.");
+      setLoading(false);
+      return;
+    }
+
+    log(`initData получено: ${initData}`);
+
+    // Отправляем данные для верификации на сервер
+    fetch("http://localhost:9000/api/auth/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData }),
+    })
+      .then((res) => {
+        log(`Ответ сервера: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        log(`Данные сервера: ${JSON.stringify(data)}`);
+        if (data.success) {
+          log("Пользователь верифицирован успешно.");
+          setUserData(data.user); // Сохраняем данные пользователя
+          setIsVerified(true);
+        } else {
+          log(`Ошибка верификации: ${data.message}`);
+          setErrorMessage(data.message || "Ошибка верификации.");
+        }
+      })
+      .catch((error) => {
+        log(`Ошибка запроса к серверу: ${error.message}`);
+        setErrorMessage("Ошибка сервера. Попробуйте снова.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
+
 
   // Если данные загружаются, показываем индикатор загрузки
   if (loading) {

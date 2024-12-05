@@ -32,34 +32,60 @@ const checkSignature = (initData, botToken) => {
 };
 
 // Верификация пользователя
-app.post('/api/auth/verify', async (req, res) => {
-  const { initData } = req.body;
+app.post("/api/auth/verify", async (req, res) => {
+  try {
+    const { initData } = req.body;
+    console.log("Получено initData от клиента:", initData);
 
-  if (!initData) {
-    return res.status(400).json({ success: false, message: 'No initData' });
-  }
-  
-
-  if (checkSignature(initData, BOT_TOKEN)) {
-    const userData = Object.fromEntries(new URLSearchParams(initData));
-
-    // Проверяем, существует ли пользователь в Supabase
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userData.id)
-      .single();
-
-    if (error) {
-      return res.status(500).json({ success: false, message: error.message });
+    if (!initData) {
+      console.error("initData отсутствует.");
+      return res.status(400).json({ success: false, message: "initData отсутствует" });
     }
 
-    // Возвращаем данные пользователя, если верификация успешна
-    return res.json({ success: true, user: data });
-  } else {
-    return res.status(403).json({ success: false, message: 'Invalid signature' });
+    if (checkSignature(initData, BOT_TOKEN)) {
+      const user = Object.fromEntries(new URLSearchParams(initData));
+      console.log("Данные пользователя:", user);
+
+      // Проверка в базе данных
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (error) {
+        console.error("Ошибка Supabase:", error.message);
+        return res.status(500).json({ success: false, message: "Ошибка базы данных" });
+      }
+
+      if (!data) {
+        console.log("Пользователь отсутствует. Создаем запись.");
+        const { error: insertError } = await supabase.from("users").insert({
+          id: user.id,
+          username: user.first_name || "Неизвестный",
+          subscription: false,
+          expiredsubscription: "2000-01-01",
+          star: 0,
+        });
+
+        if (insertError) {
+          console.error("Ошибка при добавлении пользователя:", insertError.message);
+          return res.status(500).json({ success: false, message: "Ошибка при создании пользователя" });
+        }
+      }
+
+      console.log("Пользователь обработан успешно:", data || user);
+      return res.json({ success: true, user: data || user });
+    } else {
+      console.error("Ошибка проверки подписи Telegram.");
+      return res.status(403).json({ success: false, message: "Неверная подпись" });
+    }
+  } catch (err) {
+    console.error("Неизвестная ошибка сервера:", err.message, err.stack);
+    return res.status(500).json({ success: false, message: "Внутренняя ошибка сервера" });
   }
 });
+
 
 app.post("/api/users", async (req, res) => {
   console.log("Запрос получен на /api/users");
