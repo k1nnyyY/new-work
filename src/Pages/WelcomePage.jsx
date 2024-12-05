@@ -86,14 +86,20 @@ const WelcomePage = () => {
     navigate("/profile");
   };
 
-  const tg = window.Telegram.WebApp;
-  const user = tg.initDataUnsafe?.user || null;
+  const [user, setUser] = useState(null);
 
-  if (user) {
-    console.log("User ID:", user.id); // Уникальный идентификатор
-    console.log("Username:", user.username); // Имя пользователя
-    console.log("First Name:", user.first_name); // Имя
-    console.log("Last Name:", user.last_name); // Фамилия
+  useEffect(() => {
+    // Получение данных пользователя из Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    const telegramUser = tg.initDataUnsafe?.user || null;
+
+    if (telegramUser) {
+      setUser(telegramUser);
+    }
+  }, []);
+
+  if (!user) {
+    return <p>Загрузка данных пользователя...</p>;
   }
 
   return (
