@@ -167,62 +167,27 @@ const ProfilePage = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-  const [logMessages, setLogMessages] = useState([]);
 
-  const log = (message) => {
-    setLogMessages((prevLogs) => [...prevLogs, message]);
-  };
-
+  
   useEffect(() => {
-    // Проверяем наличие initData в Telegram Web App
     const telegram = window.Telegram?.WebApp;
-    if (!telegram) {
-      log("Telegram WebApp объект недоступен.");
-      setErrorMessage("Telegram WebApp не доступен.");
-      setLoading(false);
-      return;
+  
+    if (telegram) {
+      console.log("Telegram WebApp объект доступен:", telegram);
+      console.log("initData:", telegram.initData);
+      console.log("initDataUnsafe:", telegram.initDataUnsafe);
+  
+      // Убедимся, что initData есть
+      if (telegram.initData) {
+        document.body.innerHTML += `<p style='color:green'>initData: ${telegram.initData}</p>`;
+      } else {
+        document.body.innerHTML += `<p style='color:red'>initData отсутствует</p>`;
+      }
+    } else {
+      console.error("Telegram WebApp объект недоступен.");
     }
-
-    const initData = telegram.initData;
-    if (!initData) {
-      log("initData отсутствует в Telegram WebApp.");
-      setErrorMessage("initData отсутствует.");
-      setLoading(false);
-      return;
-    }
-
-    log(`initData получено: ${initData}`);
-
-    // Отправляем данные для верификации на сервер
-    fetch("http://localhost:9000/api/auth/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ initData }),
-    })
-      .then((res) => {
-        log(`Ответ сервера: ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        log(`Данные сервера: ${JSON.stringify(data)}`);
-        if (data.success) {
-          log("Пользователь верифицирован успешно.");
-          setUserData(data.user); // Сохраняем данные пользователя
-          setIsVerified(true);
-        } else {
-          log(`Ошибка верификации: ${data.message}`);
-          setErrorMessage(data.message || "Ошибка верификации.");
-        }
-      })
-      .catch((error) => {
-        log(`Ошибка запроса к серверу: ${error.message}`);
-        setErrorMessage("Ошибка сервера. Попробуйте снова.");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
   }, []);
-
+  
 
   // Если данные загружаются, показываем индикатор загрузки
   if (loading) {
