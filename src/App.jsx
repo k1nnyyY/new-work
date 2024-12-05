@@ -14,6 +14,7 @@ const App = () => {
     setIsDarkMode(!isDarkMode);
   };
 
+
   return (
     <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
       <GlobalStyles />

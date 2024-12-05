@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+
 
 // Основной фон страницы
 const Background = styled.div`
@@ -161,13 +162,64 @@ const FooterIcon = styled.div`
 `;
 
 const ProfilePage = () => {
+
+  const [isVerified, setIsVerified] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    // Проверяем наличие initData в Telegram Web App
+    const initData = window.Telegram?.WebApp?.initData;
+
+    if (initData) {
+      // Отправляем данные для верификации на сервер
+      fetch("http://localhost:9000/api/auth/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            console.log("Пользователь верифицирован:", data.user);
+            setUserData(data.user); // Сохраняем данные пользователя
+            setIsVerified(true);
+          } else {
+            console.error("Ошибка верификации:", data.message);
+            setErrorMessage("Не удалось верифицировать пользователя.");
+          }
+        })
+        .catch((error) => {
+          console.error("Ошибка запроса к серверу:", error.message);
+          setErrorMessage("Ошибка сервера. Попробуйте снова.");
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      console.error("initData отсутствует в Telegram Web App");
+      setErrorMessage("Telegram Web App не предоставил данные для верификации.");
+      setLoading(false);
+    }
+  }, []);
+
+  // Если данные загружаются, показываем индикатор загрузки
+  if (loading) {
+    return <div>Загрузка...</div>;
+  }
+
+  if (!isVerified) {
+    return <div>{errorMessage || "Ошибка верификации."}</div>;
+  }
+
   return (
     <Background>
       <ScrollableContainer>
         <ProfileContainer>
           <Avatar />
           <Title>
-            Добрый день, Тимур
+            Добрый день, {userData.first_name}
             <span>id 2345678</span>
           </Title>
           <Section>

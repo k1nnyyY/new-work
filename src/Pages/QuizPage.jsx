@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 const Container = styled.div`
   width: 90%;
@@ -128,11 +129,49 @@ const QuizPage = () => {
   const [birthdate, setBirthdate] = useState("");
   const [gender, setGender] = useState("");
   const [relationshipStatus, setRelationshipStatus] = useState("");
+  const navigate = useNavigate();
 
-
-  const handleNext = () => {
-    if (step < 6) setStep(step + 1);
+  const handleNext = async () => {
+    if (step < 6) {
+      setStep(step + 1);
+    } else {
+      // Реальные данные для отправки
+      const payload = {
+        userName: name, // Имя пользователя
+        dayOfBirth: birthdate, // Дата рождения
+        Gender: gender === "Мужской" ? 1 : 2, // Пол
+        maritalStatus: relationshipStatus, // Семейное положение
+        WhatIsJob: occupation, // Род деятельности
+        yourObjective: goals.join(","), // Преобразуем массив целей в строку
+      };
+  
+      console.log("Отправляем данные на сервер:", payload);
+  
+      try {
+        const response = await fetch("http://localhost:9000/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+  
+        console.log("Ответ сервера:", response);
+  
+        if (!response.ok) {
+          const errorResponse = await response.json();
+          console.error("Ошибка на сервере:", errorResponse);
+          throw new Error(
+            `Ошибка сервера: ${response.status} - ${errorResponse.error || "Неизвестная ошибка"}`
+          );
+        }
+  
+        const result = await response.json();
+        console.log("Данные успешно сохранены:", result);
+      } catch (error) {
+        console.error("Ошибка на фронтенде:", error.message);
+      }
+    }
   };
+  
 
   const handleGoalChange = (goal) => {
     if (goals.includes(goal)) {

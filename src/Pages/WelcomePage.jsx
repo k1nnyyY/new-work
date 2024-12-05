@@ -83,6 +83,9 @@ const WelcomePage = () => {
   const handleNext = () => {
     navigate("/quiz");
   };
+  const handleNextk = () => {
+    navigate("/profile");
+  };
 
   return (
     <Background>
@@ -97,6 +100,7 @@ const WelcomePage = () => {
         </Text>
         </TextWrapper>
         <Button onClick={handleNext}>Далее</Button>
+        <button onClick={handleNextk}>kdodd</button>
       </Container>
     </Background>
   );
