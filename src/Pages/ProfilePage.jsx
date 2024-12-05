@@ -172,6 +172,12 @@ const ProfilePage = () => {
     // Проверяем наличие initData в Telegram Web App
     const initData = window.Telegram?.WebApp?.initData;
 
+    if (!initData) {
+      document.body.innerHTML += "<p style='color:red'>initData отсутствует</p>";
+    } else {
+      document.body.innerHTML += `<p style='color:green'>initData: ${initData}</p>`;
+    }
+    
     if (initData) {
       // Отправляем данные для верификации на сервер
       fetch("http://localhost:9000/api/auth/verify", {
