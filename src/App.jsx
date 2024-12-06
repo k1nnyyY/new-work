@@ -20,16 +20,13 @@ const App = () => {
   };
 
 
-  useEffect(() => {
-    checkUser();
-  }, []);
 
   return (
     <ThemeProvider theme={isDarkMode ? lightTheme : darkTheme}>
       <GlobalStyles />
       <Routes>
         <Route path="/welcome" element={<WelcomePage />} />
-        <Route path="/quiz" element={<RegistrationPage />} />
+        <Route path="/" element={<RegistrationPage />} />
         <Route path="/profile" element={<ProfilePage userData={userData} />} />
         <Route path="/player" element={<PlayerPage />} />
       </Routes>
