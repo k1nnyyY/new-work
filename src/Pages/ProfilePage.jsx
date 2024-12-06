@@ -163,40 +163,8 @@ const FooterIcon = styled.div`
 
 const ProfilePage = () => {
 
-  const [isVerified, setIsVerified] = useState(false);
   const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
 
-  
-  useEffect(() => {
-    const telegram = window.Telegram?.WebApp;
-  
-    if (telegram) {
-      console.log("Telegram WebApp объект доступен:", telegram);
-      console.log("initData:", telegram.initData);
-      console.log("initDataUnsafe:", telegram.initDataUnsafe);
-  
-      // Убедимся, что initData есть
-      if (telegram.initData) {
-        document.body.innerHTML += `<p style='color:green'>initData: ${telegram.initData}</p>`;
-      } else {
-        document.body.innerHTML += `<p style='color:red'>initData отсутствует</p>`;
-      }
-    } else {
-      console.error("Telegram WebApp объект недоступен.");
-    }
-  }, []);
-  
-
-  // Если данные загружаются, показываем индикатор загрузки
-  if (loading) {
-    return <div>Загрузка...</div>;
-  }
-
-  if (!isVerified) {
-    return <div>{errorMessage || "Ошибка верификации."}</div>;
-  }
 
   return (
     <Background>

@@ -135,18 +135,9 @@ const QuizPage = () => {
     if (step < 6) {
       setStep(step + 1);
     } else {
-      const telegram = window.Telegram?.WebApp;
-      const initData = telegram ? telegram.initData : null;
-
-      if (!initData) {
-        alert("Ошибка: initData отсутствует.");
-        return;
-      }
-
       // Формируем данные для отправки
 
       const payload = {
-        initData,
         userName: name, // Имя пользователя
         dayOfBirth: birthdate, // Дата рождения
         Gender: gender === "Мужской" ? 1 : 2, // Пол

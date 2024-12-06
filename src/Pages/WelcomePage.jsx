@@ -86,21 +86,6 @@ const WelcomePage = () => {
     navigate("/profile");
   };
 
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    // Получение данных пользователя из Telegram WebApp
-    const tg = window.Telegram.WebApp;
-    const telegramUser = tg.initDataUnsafe?.user || null;
-
-    if (telegramUser) {
-      setUser(telegramUser);
-    }
-  }, []);
-
-  if (!user) {
-    return <p>Загрузка данных пользователя...</p>;
-  }
 
   return (
     <Background>
