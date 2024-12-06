@@ -93,16 +93,16 @@ const WelcomePage = () => {
         <Image />
         <TextWrapper>
           <p>
-            <strong>Ваш ID:</strong> {user.id}
+            <strong>Ваш ID:</strong> 
           </p>
           <p>
-            <strong>Имя:</strong> {user.first_name}
+            <strong>Имя:</strong> 
           </p>
           <p>
-            <strong>Фамилия:</strong> {user.last_name || "Не указана"}
+            <strong>Фамилия:</strong> 
           </p>
           <p>
-            <strong>Username:</strong> {user.username || "Не указан"}
+            <strong>Username:</strong>
           </p>
           <Title>Добро пожаловать в Angelvoice!</Title>
           <Text>
