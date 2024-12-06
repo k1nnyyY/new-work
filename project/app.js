@@ -1,60 +1,112 @@
-const express = require('express');
-const cors = require('cors');
-const { parse, validate } = require('@telegram-apps/init-data-node');
-const supabase = require('./server'); // Adjust according to your database setup
+const express = require("express");
+const crypto = require("crypto");
+const supabase = require("./server");
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 
-const TELEGRAM_SECRET = 'YOUR_TELEGRAM_BOT_TOKEN'; // Replace with your actual bot token
+// Проверка подлинности данных Telegram Web App
+function checkTelegramAuth(initData, botToken) {
+  const secretKey = crypto.createHash("sha256").update(botToken).digest();
+  const dataCheckString = Object.keys(initData)
+    .filter((key) => key !== "hash")
+    .sort()
+    .map((key) => `${key}=${initData[key]}`)
+    .join("\n");
 
-// Validate and parse initData
-app.post('/api/validate-init', async (req, res) => {
+  const hmac = crypto
+    .createHmac("sha256", secretKey)
+    .update(dataCheckString)
+    .digest("hex");
+  return hmac === initData.hash;
+}
+
+// Настройка маршрута для проверки пользователя
+app.post("/api/check-user", async (req, res) => {
   const { initData } = req.body;
+  const BOT_TOKEN = process.env.BOT_TOKEN;
 
-  try {
-    // Validate the initData
-    validate(initData, TELEGRAM_SECRET);
-
-    // Parse initData
-    const parsedData = parse(initData);
-    const userId = parsedData.user?.id;
-    const userName = parsedData.user?.username || parsedData.user?.firstName;
-
-    if (!userId || !userName) {
-      return res.status(400).json({ error: 'Invalid initData' });
-    }
-
-    // Check if the user exists in the database
-    const { data: user, error } = await supabase
-      .from('profile')
-      .select('*')
-      .eq('id', userId)
-      .single();
-
-    if (error) {
-      // If user does not exist, create one
-      const { data: newUser, error: createError } = await supabase
-        .from('profile')
-        .insert([{ id: userId, userName, created_at: new Date() }]);
-
-      if (createError) {
-        return res.status(500).json({ error: createError.message });
-      }
-
-      return res.status(201).json({ message: 'User created', user: newUser });
-    }
-
-    // If user exists, return success
-    res.status(200).json({ message: 'User exists', user });
-  } catch (e) {
-    console.error('Validation error:', e);
-    res.status(400).json({ error: e.message });
+  if (!initData || !BOT_TOKEN) {
+    return res
+      .status(400)
+      .json({ error: "Invalid request or missing BOT_TOKEN." });
   }
+
+  const initDataObj = Object.fromEntries(new URLSearchParams(initData));
+
+  if (!checkTelegramAuth(initDataObj, BOT_TOKEN)) {
+    return res.status(403).json({ error: "Unauthorized request." });
+  }
+
+  // Разбор данных пользователя
+  const user = JSON.parse(initDataObj.user);
+
+  // Сохранение данных пользователя в базе
+  const { data, error } = await supabase.from("users").upsert({
+    id: user.id,
+    userName: user.username,
+    dayOfBirth: null, // Можете задать дефолтное значение или оставить null
+    Gender: null,
+    maritalStatus: null,
+    WhatIsJob: null,
+    yourObjective: null,
+    star: 0,
+    subscription: false,
+    expiredSubscription: null,
+  });
+
+  if (error) {
+    console.error("Error upserting user:", error);
+    return res.status(500).json({ error: "Failed to save user data." });
+  }
+
+  res.json({ message: "User authenticated and saved.", user: data });
 });
 
-// Start the server
+// Добавление нового пользователя вручную
+app.post("/api/users", async (req, res) => {
+  const {
+    id,
+    userName,
+    dayOfBirth,
+    Gender,
+    maritalStatus,
+    WhatIsJob,
+    yourObjective,
+    star,
+    subscription,
+    expiredSubscription,
+  } = req.body;
+
+  if (!id || !userName || Gender === undefined || dayOfBirth === undefined) {
+    return res.status(400).json({
+      error: "id, userName, Gender, and dayOfBirth are required fields.",
+    });
+  }
+
+  const { data, error } = await supabase.from("users").insert([
+    {
+      id,
+      userName,
+      dayOfBirth,
+      Gender,
+      maritalStatus,
+      WhatIsJob,
+      yourObjective,
+      star,
+      subscription,
+      expiredSubscription,
+    },
+  ]);
+
+  if (error) {
+    console.error("Error inserting user:", error);
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.status(201).json(data);
+});
+
 const PORT = 9000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
