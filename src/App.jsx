@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ThemeProvider } from "styled-components";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { GlobalStyles } from "./GlobalStyles";
 import { lightTheme, darkTheme } from "./theme";
 import WelcomePage from "./Pages/WelcomePage";
@@ -11,17 +11,19 @@ import PlayerPage from "./Pages/PlayerPage";
 const App = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const navigate = useNavigate();
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
   };
 
   const checkUser = async () => {
-    const initData = window.Telegram?.WebApp?.initData;
+    const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
-    if (!initData) {
-      console.error("Telegram InitData is missing");
-      setIsAuthenticated(false);
+    if (!telegramUser || !telegramUser.username) {
+      console.error("Telegram user data is missing or incomplete");
+      navigate("/quiz");
       return;
     }
 
@@ -29,32 +31,33 @@ const App = () => {
       const response = await fetch("http://localhost:9000/api/auth/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ initData }),
+        body: JSON.stringify({ username: telegramUser.username }),
       });
 
       const result = await response.json();
 
       if (result.redirect === "/welcome") {
         setIsAuthenticated(false);
+        navigate("/quiz");
       } else if (result.redirect === "/profile") {
+        setUserData(result.user);
         setIsAuthenticated(true);
+        navigate("/profile");
       } else {
         console.error("Unexpected response:", result);
         setIsAuthenticated(false);
+        navigate("/quiz");
       }
     } catch (error) {
       console.error("Error verifying user:", error);
       setIsAuthenticated(false);
+      navigate("/quiz");
     }
   };
 
   useEffect(() => {
     checkUser();
   }, []);
-
-  if (isAuthenticated === null) {
-    return <div>Loading...</div>; // Пока проверка выполняется
-  }
 
   return (
     <ThemeProvider theme={isDarkMode ? lightTheme : darkTheme}>
@@ -72,7 +75,7 @@ const App = () => {
         />
         <Route path="/welcome" element={<WelcomePage />} />
         <Route path="/quiz" element={<QuizPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile" element={<ProfilePage userData={userData} />} />
         <Route path="/player" element={<PlayerPage />} />
       </Routes>
       <button

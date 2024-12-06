@@ -121,62 +121,65 @@ const CheckboxGroup = styled.div`
 
 // Основной компонент
 const QuizPage = () => {
-    const [step, setStep] = useState(1); // Текущий шаг
-    const [occupation, setOccupation] = useState("");
-    const [goals, setGoals] = useState([]);
-    const [name, setName] = useState("");
-    const [birthdate, setBirthdate] = useState("");
-    const [gender, setGender] = useState("");
-    const [relationshipStatus, setRelationshipStatus] = useState("");
-  
-    const navigate = useNavigate();
-    const handleNext = async () => {
-      const mockPayload = {
-        id: Math.floor(Math.random() * 1000000).toString(), 
-        username: "testuser", // Пример имени пользователя
-        dayofbirth: "1990-01-01", // Пример даты рождения
-        gender: 1, // Пол (male/female)
-        marital_status: "single", // Семейное положение
-        job: "freelancer", // Работа
-        objective: "self-development,career-growth", // Цели
+  const [step, setStep] = useState(1);
+  const [occupation, setOccupation] = useState("");
+  const [goals, setGoals] = useState([]);
+  const [name, setName] = useState("");
+  const [birthdate, setBirthdate] = useState("");
+  const [gender, setGender] = useState("");
+  const [relationshipStatus, setRelationshipStatus] = useState("");
+  const navigate = useNavigate();
+
+  const handleNext = async () => {
+    if (step < 6) {
+      setStep(step + 1);
+    } else {
+      const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+      if (!telegramUser || !telegramUser.username) {
+        console.error("Telegram user data is missing");
+        return;
+      }
+
+      const payload = {
+        username: telegramUser.username,
+        first_name: name,
+        dayofbirth: birthdate,
+        gender,
+        marital_status: relationshipStatus,
+        job: occupation,
+        objective: goals.join(","),
       };
-    
-      console.log("Отправляем мок-данные на сервер:", mockPayload);
-    
+
       try {
         const response = await fetch("http://localhost:9000/api/users/create", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(mockPayload),
+          body: JSON.stringify(payload),
         });
-    
-        console.log("Ответ сервера:", response);
-    
+
         if (!response.ok) {
           const errorResponse = await response.json();
-          console.error("Ошибка на сервере:", errorResponse);
-          throw new Error(
-            `Ошибка сервера: ${response.status} - ${errorResponse.error || "Неизвестная ошибка"}`
-          );
+          console.error("Error creating user:", errorResponse);
+          throw new Error(errorResponse.error || "Unknown error");
         }
-    
+
         const result = await response.json();
-        console.log("Мок-данные успешно сохранены:", result);
-        alert("Мок-данные успешно отправлены!");
+        console.log("User created successfully:", result);
+        navigate("/profile");
       } catch (error) {
-        console.error("Ошибка на фронтенде:", error.message);
-        alert("Произошла ошибка. Попробуйте еще раз.");
+        console.error("Error on QuizPage:", error.message);
       }
-    };
-    
-    const handleGoalChange = (goal) => {
-      if (goals.includes(goal)) {
-        setGoals(goals.filter((g) => g !== goal));
-      } else {
-        setGoals([...goals, goal]);
-      }
-    };
-  
+    }
+  };
+
+  const handleGoalChange = (goal) => {
+    if (goals.includes(goal)) {
+      setGoals(goals.filter((g) => g !== goal));
+    } else {
+      setGoals([...goals, goal]);
+    }
+  };
 
   return (
       <Container>
