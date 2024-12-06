@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 import { ThemeProvider } from "styled-components";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { GlobalStyles } from "./GlobalStyles";
