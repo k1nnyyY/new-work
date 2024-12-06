@@ -16,52 +16,42 @@ const App = () => {
   };
 
   const checkUser = async () => {
-    const initData = window.Telegram.WebApp.initData;
-  
-    if (!initData) {
-      console.error("Telegram InitData is missing");
+  const initData = window.Telegram.WebApp.initData;
+
+  if (!initData) {
+    console.error("Telegram InitData is missing");
+    setIsAuthenticated(false);
+    return;
+  }
+
+  try {
+    const response = await fetch("http://localhost:9000/api/auth/verify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ initData }),
+    });
+
+    const result = await response.json();
+
+    if (result.redirect === "/welcome") {
       setIsAuthenticated(false);
-      return;
-    }
-  
-    try {
-      const response = await fetch("http://localhost:9000/api/auth/verify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ initData }),
-      });
-  
-      const result = await response.json();
-  
-      if (result.redirect === "/welcome") {
-        setIsAuthenticated(false);
-      } else if (result.redirect === "/profile") {
-        setIsAuthenticated(true);
-      } else {
-        console.error("Unexpected response:", result);
-        setIsAuthenticated(false);
-      }
-    } catch (error) {
-      console.error("Error verifying user:", error);
+    } else if (result.redirect === "/profile") {
+      setIsAuthenticated(true);
+    } else {
+      console.error("Unexpected response:", result);
       setIsAuthenticated(false);
     }
-  };
-  
+  } catch (error) {
+    console.error("Error verifying user:", error);
+    setIsAuthenticated(false);
+  }
+};
+
   useEffect(() => {
     checkUser();
   }, []);
-
-  if (isAuthenticated === null) {
-    return <div>Loading...</div>;
-  }
-  
-  if (isAuthenticated) {
-    return <Navigate to="/profile" />;
-  } else {
-    return <Navigate to="/welcome" />;
-  }
 
   return (
     <ThemeProvider theme={isDarkMode ? lightTheme : darkTheme}>
