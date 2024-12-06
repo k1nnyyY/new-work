@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { ThemeProvider } from "styled-components";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { GlobalStyles } from "./GlobalStyles";
@@ -8,13 +8,12 @@ import QuizPage from "./Pages/QuizPage";
 import ProfilePage from "./Pages/ProfilePage";
 
 const App = () => {
-  const [isDarkMode, setIsDarkMode] = React.useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
   };
-
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   const checkUser = async () => {
     const initData = window.Telegram.WebApp.initData;
@@ -51,16 +50,19 @@ const App = () => {
     checkUser();
   }, []);
 
+  if (isAuthenticated === null) {
+    return <div>Loading...</div>; // Отображение загрузки до завершения проверки
+  }
+
   return (
-    <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
+    <ThemeProvider theme={isDarkMode ? lightTheme : darkTheme}>
       <GlobalStyles />
       <Router>
-      <Routes>
-        {isAuthenticated === null && <div>Loading...</div>}
-        {isAuthenticated === false && <Route path="/" element={<WelcomePage />} />}
-        {isAuthenticated === true && <Route path="/" element={<ProfilePage />} />}
-        <Route path="/quiz" element={<QuizPage />} />
-      </Routes>
+        <Routes>
+          {isAuthenticated === false && <Route path="/" element={<WelcomePage />} />}
+          {isAuthenticated === true && <Route path="/" element={<ProfilePage />} />}
+          <Route path="/quiz" element={<QuizPage />} />
+        </Routes>
       </Router>
       <button
         style={{
