@@ -19,42 +19,6 @@ const App = () => {
     setIsDarkMode(!isDarkMode);
   };
 
-  const checkUser = async () => {
-    const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-
-    if (!telegramUser || !telegramUser.username) {
-      console.error("Telegram user data is missing or incomplete");
-      navigate("/quiz");
-      return;
-    }
-
-    try {
-      const response = await fetch("http://localhost:9000/api/auth/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: telegramUser.username }),
-      });
-
-      const result = await response.json();
-
-      if (result.redirect === "/welcome") {
-        setIsAuthenticated(false);
-        navigate("/quiz");
-      } else if (result.redirect === "/profile") {
-        setUserData(result.user);
-        setIsAuthenticated(true);
-        navigate("/profile");
-      } else {
-        console.error("Unexpected response:", result);
-        setIsAuthenticated(false);
-        navigate("/quiz");
-      }
-    } catch (error) {
-      console.error("Error verifying user:", error);
-      setIsAuthenticated(false);
-      navigate("/quiz");
-    }
-  };
 
   useEffect(() => {
     checkUser();
@@ -64,16 +28,6 @@ const App = () => {
     <ThemeProvider theme={isDarkMode ? lightTheme : darkTheme}>
       <GlobalStyles />
       <Routes>
-        <Route
-          path="/"
-          element={
-            isAuthenticated ? (
-              <Navigate to="/profile" />
-            ) : (
-              <Navigate to="/welcome" />
-            )
-          }
-        />
         <Route path="/welcome" element={<WelcomePage />} />
         <Route path="/quiz" element={<RegistrationPage />} />
         <Route path="/profile" element={<ProfilePage userData={userData} />} />

@@ -31,7 +31,7 @@ function checkTelegramAuth(initData, botToken) {
 // Настройка маршрута для проверки пользователя
 app.post("/api/check-user", async (req, res) => {
   const { initData } = req.body;
-  const BOT_TOKEN = process.env.BOT_TOKEN;
+  const BOT_TOKEN = "8020257687:AAFTfQoThU4qI_DJjE8S4TEnzGBm-AKgVhw";
 
   if (!initData || !BOT_TOKEN) {
     return res
