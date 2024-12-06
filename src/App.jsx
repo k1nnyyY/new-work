@@ -6,6 +6,7 @@ import { lightTheme, darkTheme } from "./theme";
 import WelcomePage from "./Pages/WelcomePage";
 import QuizPage from "./Pages/QuizPage";
 import ProfilePage from "./Pages/ProfilePage";
+import PlayerPage from "./Pages/PlayerPage";
 
 const App = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -16,42 +17,44 @@ const App = () => {
   };
 
   const checkUser = async () => {
-  const initData = window.Telegram.WebApp.initData;
+    const initData = window.Telegram?.WebApp?.initData;
 
-  if (!initData) {
-    console.error("Telegram InitData is missing");
-    setIsAuthenticated(false);
-    return;
-  }
-
-  try {
-    const response = await fetch("http://localhost:9000/api/auth/verify", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ initData }),
-    });
-
-    const result = await response.json();
-
-    if (result.redirect === "/welcome") {
+    if (!initData) {
+      console.error("Telegram InitData is missing");
       setIsAuthenticated(false);
-    } else if (result.redirect === "/profile") {
-      setIsAuthenticated(true);
-    } else {
-      console.error("Unexpected response:", result);
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:9000/api/auth/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData }),
+      });
+
+      const result = await response.json();
+
+      if (result.redirect === "/welcome") {
+        setIsAuthenticated(false);
+      } else if (result.redirect === "/profile") {
+        setIsAuthenticated(true);
+      } else {
+        console.error("Unexpected response:", result);
+        setIsAuthenticated(false);
+      }
+    } catch (error) {
+      console.error("Error verifying user:", error);
       setIsAuthenticated(false);
     }
-  } catch (error) {
-    console.error("Error verifying user:", error);
-    setIsAuthenticated(false);
-  }
-};
+  };
 
   useEffect(() => {
     checkUser();
   }, []);
+
+  if (isAuthenticated === null) {
+    return <div>Loading...</div>; // Пока проверка выполняется
+  }
 
   return (
     <ThemeProvider theme={isDarkMode ? lightTheme : darkTheme}>
@@ -70,6 +73,7 @@ const App = () => {
         <Route path="/welcome" element={<WelcomePage />} />
         <Route path="/quiz" element={<QuizPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/player" element={<PlayerPage />} />
       </Routes>
       <button
         style={{

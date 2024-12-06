@@ -1,42 +1,34 @@
 const express = require('express');
-const { validate } = require('@telegram-apps/init-data-node'); // Импорт библиотеки
-const supabase = require('./server'); // Подключение базы данных
+const { validate } = require('@telegram-apps/init-data-node');
+const supabase = require('./server');
 const cors = require('cors');
 
 const app = express();
 app.use(express.json());
 
-app.use(cors({
-  origin: [
-    'https://new-work-kohl.vercel.app', // Разрешить запросы с вашего фронтенда
-    'https://new-work-n776hw9pd-k1nnyyys-projects.vercel.app',
-    'https://new-work-eeovtwyue-k1nnyyys-projects.vercel.app/welcome' // Другие допустимые источники
-  ],
-  methods: ['GET', 'POST'],
-  credentials: true, // Если используете куки
-}));
-
-// Логирование всех входящих запросов
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  console.log("Headers:", req.headers);
-  console.log("Body:", req.body);
-  next();
-});
+app.use(
+  cors({
+    origin: [
+      'https://new-work-kohl.vercel.app',
+      'https://new-work-n776hw9pd-k1nnyyys-projects.vercel.app',
+    ],
+    methods: ['GET', 'POST'],
+    credentials: true,
+  })
+);
 
 const BOT_TOKEN = '8020257687:AAFTfQoThU4qI_DJjE8S4TEnzGBm-AKgVhw';
 
-app.post("/api/auth/verify", async (req, res) => {
+// Проверка пользователя при заходе
+app.post('/api/auth/verify', async (req, res) => {
   const { initData } = req.body;
 
   if (!initData) {
-    console.error("initData is missing");
-    return res.status(400).json({ success: false, message: "initData is missing" });
+    return res.status(400).json({ success: false, message: 'initData is missing' });
   }
 
   try {
-    validate(initData, BOT_TOKEN); // Проверка подписи
-    console.log("Signature is valid");
+    validate(initData, BOT_TOKEN);
 
     const userParams = new URLSearchParams(initData);
     const user = {
@@ -44,46 +36,69 @@ app.post("/api/auth/verify", async (req, res) => {
       username: userParams.get('user') && JSON.parse(userParams.get('user')).username,
     };
 
-    console.log("Extracted user:", user);
-
     const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", user.id)
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
       .single();
 
-    if (error && error.code !== "PGRST116") {
-      console.error("Database error:", error);
-      return res.status(500).json({ success: false, message: "Database error" });
+    if (error && error.code !== 'PGRST116') {
+      return res.status(500).json({ success: false, message: 'Database error' });
     }
 
     if (!data) {
-      console.log("User not found, creating a new one...");
-      // Используем мок-данные для обязательных полей
-      const { error: insertError } = await supabase.from("users").insert({
-        id: user.id,
-        username: user.username || "Unknown",
-        first_name: "John", // Мок-значение для имени
-        last_name: "Doe", // Мок-значение для фамилии
-        dayofbirth: "2000-01-01", // Мок-значение для даты рождения
-        subscription: false,
-        expiredsubscription: "2000-01-01",
-        star: 0,
-      });
-
-      if (insertError) {
-        console.error("Error inserting user:", insertError);
-        return res.status(500).json({ success: false, message: "Error creating user" });
-      }
-
-      return res.json({ success: false, message: "New user created with mock data" });
+      return res.json({ success: false, redirect: '/welcome' });
     }
 
-    return res.json({ success: true, user: data });
+    return res.json({ success: true, redirect: '/profile', user: data });
   } catch (error) {
-    console.error("Invalid signature or expired data:", error.message);
-    return res.status(403).json({ success: false, message: "Invalid signature or expired data" });
+    return res.status(403).json({ success: false, message: 'Invalid signature or expired data' });
   }
+});
+
+// Обработка завершения квиза и создание профиля
+app.post('/api/users/create', async (req, res) => {
+  const {
+    id,
+    username,
+    first_name,
+    last_name,
+    dayofbirth,
+    gender,
+    marital_status,
+    job,
+    objective,
+    subscription,
+    expiredsubscription,
+  } = req.body;
+
+  if (!id || !username || !dayofbirth || !gender) {
+    return res
+      .status(400)
+      .json({ error: 'id, username, dayofbirth, and gender are required fields.' });
+  }
+
+  const { data, error } = await supabase.from('users').insert([
+    {
+      id,
+      username,
+      first_name: first_name || '',
+      last_name: last_name || '',
+      dayofbirth,
+      gender,
+      marital_status: marital_status || null,
+      job: job || null,
+      objective: objective || null,
+      subscription: subscription || false,
+      expiredsubscription: expiredsubscription || null,
+    },
+  ]);
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.status(201).json({ success: true, data });
 });
 
 const PORT = 9000;

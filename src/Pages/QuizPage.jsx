@@ -120,96 +120,71 @@ const CheckboxGroup = styled.div`
 
 
 // Основной компонент
-const QuizPage = async () => {
-  const [step, setStep] = useState(1); // Текущий шаг
-  const [occupation, setOccupation] = useState("");
-  const [goals, setGoals] = useState([]);
-
-  const [name, setName] = useState("");
-  const [birthdate, setBirthdate] = useState("");
-  const [gender, setGender] = useState("");
-  const [relationshipStatus, setRelationshipStatus] = useState("");
-  const navigate = useNavigate();
-  const initData = window.Telegram.WebApp.initData;
-
-  const payload = {
-    id: JSON.parse(new URLSearchParams(initData).get("user")).id,
-    userName: name,
-    dayOfBirth: birthdate,
-    Gender: gender === "Мужской" ? 1 : 2,
-    maritalStatus: relationshipStatus,
-    WhatIsJob: occupation,
-    yourObjective: goals.join(","),
-  };
-  try {
-    const response = await fetch("http://localhost:9000/api/users/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+const QuizPage = () => {
+    const [step, setStep] = useState(1); // Текущий шаг
+    const [occupation, setOccupation] = useState("");
+    const [goals, setGoals] = useState([]);
+    const [name, setName] = useState("");
+    const [birthdate, setBirthdate] = useState("");
+    const [gender, setGender] = useState("");
+    const [relationshipStatus, setRelationshipStatus] = useState("");
   
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
+    const navigate = useNavigate();
   
-    const result = await response.json();
-    console.log("Profile created:", result);
-    navigate("/profile");
-  } catch (error) {
-    console.error("Error during profile creation:", error);
-  }
-  const handleNext = async () => {
-    if (step < 6) {
-      setStep(step + 1);
-    } else {
-      // Формируем данные для отправки
-
-      const payload = {
-        userName: name, // Имя пользователя
-        dayOfBirth: birthdate, // Дата рождения
-        Gender: gender === "Мужской" ? 1 : 2, // Пол
-        maritalStatus: relationshipStatus, // Семейное положение
-        WhatIsJob: occupation, // Род деятельности
-        yourObjective: goals.join(","), // Преобразуем массив целей в строку
-      };
+    const handleNext = async () => {
+      if (step < 6) {
+        setStep(step + 1);
+      } else {
+        const initData = new URLSearchParams(window.location.search).get("initData");
   
-      console.log("Отправляем данные на сервер:", payload);
+        const payload = {
+          initData,
+          userName: name,
+          dayOfBirth: birthdate,
+          Gender: gender === "Мужской" ? 1 : 2,
+          maritalStatus: relationshipStatus,
+          WhatIsJob: occupation,
+          yourObjective: goals.join(","),
+        };
   
-      try {
-        const response = await fetch("http://localhost:9000/api/users", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+        console.log("Отправляем данные на сервер:", payload);
   
-        console.log("Ответ сервера:", response);
+        try {
+          const response = await fetch("http://localhost:9000/api/users/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
   
-        if (!response.ok) {
-          const errorResponse = await response.json();
-          console.error("Ошибка на сервере:", errorResponse);
-          throw new Error(
-            `Ошибка сервера: ${response.status} - ${errorResponse.error || "Неизвестная ошибка"}`
-          );
-        }
+          console.log("Ответ сервера:", response);
   
-        const result = await response.json();
-        console.log("Данные успешно сохранены:", result);
-        alert("Квиз успешно завершён!");
+          if (!response.ok) {
+            const errorResponse = await response.json();
+            console.error("Ошибка на сервере:", errorResponse);
+            throw new Error(
+              `Ошибка сервера: ${response.status} - ${errorResponse.error || "Неизвестная ошибка"}`
+            );
+          }
+  
+          const result = await response.json();
+          console.log("Данные успешно сохранены:", result);
+          alert("Квиз успешно завершён!");
           navigate("/success");
-      } catch (error) {
-        console.error("Ошибка на фронтенде:", error.message);
+        } catch (error) {
+          console.error("Ошибка на фронтенде:", error.message);
+          alert("Произошла ошибка. Попробуйте еще раз.");
+        }
       }
-    }
-  };
+    };
   
-
-  const handleGoalChange = (goal) => {
-    if (goals.includes(goal)) {
-      setGoals(goals.filter((g) => g !== goal));
-    } else {
-      setGoals([...goals, goal]);
-    }
-  };
+    const handleGoalChange = (goal) => {
+      if (goals.includes(goal)) {
+        setGoals(goals.filter((g) => g !== goal));
+      } else {
+        setGoals([...goals, goal]);
+      }
+    };
+  
 
   return (
       <Container>
