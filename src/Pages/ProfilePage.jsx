@@ -192,9 +192,6 @@ const FooterIcon = styled.div`
           <ProfileContainer>
             <Avatar />
             <Title>
-            <h1>Welcome, {userData.first_name}</h1>
-              Добрый день, {userData.first_name}
-              <span>id 2345678</span>
             </Title>
             <Section>
               <SectionTitle>Личное</SectionTitle>
