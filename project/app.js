@@ -11,6 +11,9 @@ app.use(
     origin: [
       'https://new-work-kohl.vercel.app',
       'https://new-work-n776hw9pd-k1nnyyys-projects.vercel.app',
+      "https://new-work-3he2gjdfm-k1nnyyys-projects.vercel.app",
+      "http://localhost:5173/quiz",
+      "http://localhost:5173"
     ],
     methods: ['GET', 'POST'],
     credentials: true,
@@ -86,9 +89,9 @@ app.post('/api/users/create', async (req, res) => {
       last_name: last_name || '',
       dayofbirth,
       gender,
-      marital_status: marital_status || null,
-      job: job || null,
-      objective: objective || null,
+      maritalstatus: marital_status || null,
+      whatisjob: job || null,
+      yourobjective: objective || null,
       subscription: subscription || false,
       expiredsubscription: expiredsubscription || null,
     },
@@ -99,6 +102,10 @@ app.post('/api/users/create', async (req, res) => {
   }
 
   res.status(201).json({ success: true, data });
+});
+app.use((req, res, next) => {
+  console.log("Incoming request data:", req.body);
+  next();
 });
 
 const PORT = 9000;

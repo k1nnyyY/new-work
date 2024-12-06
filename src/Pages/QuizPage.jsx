@@ -130,53 +130,45 @@ const QuizPage = () => {
     const [relationshipStatus, setRelationshipStatus] = useState("");
   
     const navigate = useNavigate();
-  
     const handleNext = async () => {
-      if (step < 6) {
-        setStep(step + 1);
-      } else {
-        const initData = new URLSearchParams(window.location.search).get("initData");
-  
-        const payload = {
-          initData,
-          userName: name,
-          dayOfBirth: birthdate,
-          Gender: gender === "Мужской" ? 1 : 2,
-          maritalStatus: relationshipStatus,
-          WhatIsJob: occupation,
-          yourObjective: goals.join(","),
-        };
-  
-        console.log("Отправляем данные на сервер:", payload);
-  
-        try {
-          const response = await fetch("http://localhost:9000/api/users/create", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-  
-          console.log("Ответ сервера:", response);
-  
-          if (!response.ok) {
-            const errorResponse = await response.json();
-            console.error("Ошибка на сервере:", errorResponse);
-            throw new Error(
-              `Ошибка сервера: ${response.status} - ${errorResponse.error || "Неизвестная ошибка"}`
-            );
-          }
-  
-          const result = await response.json();
-          console.log("Данные успешно сохранены:", result);
-          alert("Квиз успешно завершён!");
-          navigate("/success");
-        } catch (error) {
-          console.error("Ошибка на фронтенде:", error.message);
-          alert("Произошла ошибка. Попробуйте еще раз.");
+      const mockPayload = {
+        id: Math.floor(Math.random() * 1000000).toString(), 
+        username: "testuser", // Пример имени пользователя
+        dayofbirth: "1990-01-01", // Пример даты рождения
+        gender: 1, // Пол (male/female)
+        marital_status: "single", // Семейное положение
+        job: "freelancer", // Работа
+        objective: "self-development,career-growth", // Цели
+      };
+    
+      console.log("Отправляем мок-данные на сервер:", mockPayload);
+    
+      try {
+        const response = await fetch("http://localhost:9000/api/users/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(mockPayload),
+        });
+    
+        console.log("Ответ сервера:", response);
+    
+        if (!response.ok) {
+          const errorResponse = await response.json();
+          console.error("Ошибка на сервере:", errorResponse);
+          throw new Error(
+            `Ошибка сервера: ${response.status} - ${errorResponse.error || "Неизвестная ошибка"}`
+          );
         }
+    
+        const result = await response.json();
+        console.log("Мок-данные успешно сохранены:", result);
+        alert("Мок-данные успешно отправлены!");
+      } catch (error) {
+        console.error("Ошибка на фронтенде:", error.message);
+        alert("Произошла ошибка. Попробуйте еще раз.");
       }
     };
-  
+    
     const handleGoalChange = (goal) => {
       if (goals.includes(goal)) {
         setGoals(goals.filter((g) => g !== goal));
