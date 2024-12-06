@@ -7,6 +7,7 @@ import WelcomePage from "./Pages/WelcomePage";
 import QuizPage from "./Pages/QuizPage";
 import ProfilePage from "./Pages/ProfilePage";
 import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 
 const App = () => {
