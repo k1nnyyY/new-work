@@ -7,6 +7,7 @@ import WelcomePage from "./Pages/WelcomePage";
 import QuizPage from "./Pages/QuizPage";
 import ProfilePage from "./Pages/ProfilePage";
 import PlayerPage from "./Pages/PlayerPage";
+import RegistrationPage from "./Pages/RegistrationPage";
 
 const App = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -74,7 +75,7 @@ const App = () => {
           }
         />
         <Route path="/welcome" element={<WelcomePage />} />
-        <Route path="/quiz" element={<QuizPage />} />
+        <Route path="/quiz" element={<RegistrationPage />} />
         <Route path="/profile" element={<ProfilePage userData={userData} />} />
         <Route path="/player" element={<PlayerPage />} />
       </Routes>

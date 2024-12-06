@@ -1,126 +1,60 @@
-const express = require("express");
-const supabase = require("./server");
-const cors = require("cors");
-const morgan = require("morgan");
+const express = require('express');
+const cors = require('cors');
+const { parse, validate } = require('@telegram-apps/init-data-node');
+const supabase = require('./server'); // Adjust according to your database setup
 
 const app = express();
-
-// Middleware для логирования запросов
-app.use(morgan("combined"));
+app.use(cors());
 app.use(express.json());
 
-app.use(
-  cors({
-    origin: "*", // Разрешить запросы со всех доменов (для тестов)
-    methods: ["GET", "POST"],
-    credentials: true,
-  })
-);
+const TELEGRAM_SECRET = 'YOUR_TELEGRAM_BOT_TOKEN'; // Replace with your actual bot token
 
-// Логирование каждого входящего запроса
-app.use((req, res, next) => {
-  console.log("Incoming request:");
-  console.log(`Method: ${req.method}`);
-  console.log(`URL: ${req.originalUrl}`);
-  console.log(`Body: ${JSON.stringify(req.body, null, 2)}`);
-  console.log(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
-  next();
-});
-
-// Проверка пользователя по username
-app.post("/api/auth/verify", async (req, res) => {
-  const { username } = req.body;
-
-  console.log("Processing /api/auth/verify with username:", username);
-
-  if (!username) {
-    console.error("Username is missing");
-    return res.status(400).json({ success: false, message: "Username is missing" });
-  }
+// Validate and parse initData
+app.post('/api/validate-init', async (req, res) => {
+  const { initData } = req.body;
 
   try {
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("username", username)
+    // Validate the initData
+    validate(initData, TELEGRAM_SECRET);
+
+    // Parse initData
+    const parsedData = parse(initData);
+    const userId = parsedData.user?.id;
+    const userName = parsedData.user?.username || parsedData.user?.firstName;
+
+    if (!userId || !userName) {
+      return res.status(400).json({ error: 'Invalid initData' });
+    }
+
+    // Check if the user exists in the database
+    const { data: user, error } = await supabase
+      .from('profile')
+      .select('*')
+      .eq('id', userId)
       .single();
 
-    if (error && error.code !== "PGRST116") {
-      console.error("Database error:", error.message);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
-
-    if (!data) {
-      console.log("User not found, redirecting to /welcome");
-      return res.json({ success: false, redirect: "/welcome" });
-    }
-
-    console.log("User found, redirecting to /profile:", data);
-    return res.json({ success: true, redirect: "/profile", user: data });
-  } catch (error) {
-    console.error("Unexpected error:", error.message);
-    return res.status(500).json({ success: false, message: "Unexpected error" });
-  }
-});
-
-// Создание пользователя
-app.post("/api/users/create", async (req, res) => {
-  const {
-    username,
-    first_name,
-    last_name,
-    dayofbirth,
-    gender,
-    marital_status,
-    job,
-    objective,
-    subscription,
-    expiredsubscription,
-  } = req.body;
-
-  console.log("Processing /api/users/create with data:", req.body);
-
-  if (!username || !dayofbirth || !gender) {
-    console.error("Required fields are missing");
-    return res
-      .status(400)
-      .json({ error: "username, dayofbirth, and gender are required fields." });
-  }
-
-  try {
-    const { data, error } = await supabase.from("users").insert([
-      {
-        username,
-        first_name: first_name || "",
-        last_name: last_name || "",
-        dayofbirth,
-        gender,
-        maritalstatus: marital_status || null,
-        whatisjob: job || null,
-        yourobjective: objective || null,
-        subscription: subscription || false,
-        expiredsubscription: expiredsubscription || null,
-      },
-    ]);
-
     if (error) {
-      console.error("Error inserting user into database:", error.message);
-      return res.status(400).json({ error: error.message });
+      // If user does not exist, create one
+      const { data: newUser, error: createError } = await supabase
+        .from('profile')
+        .insert([{ id: userId, userName, created_at: new Date() }]);
+
+      if (createError) {
+        return res.status(500).json({ error: createError.message });
+      }
+
+      return res.status(201).json({ message: 'User created', user: newUser });
     }
 
-    console.log("User created successfully:", data);
-    res.status(201).json({ success: true, data });
-  } catch (error) {
-    console.error("Unexpected error during user creation:", error.message);
-    res.status(500).json({ error: "Unexpected server error" });
+    // If user exists, return success
+    res.status(200).json({ message: 'User exists', user });
+  } catch (e) {
+    console.error('Validation error:', e);
+    res.status(400).json({ error: e.message });
   }
 });
-app.use((err, req, res, next) => {
-  console.error("Server error:", err.stack || err.message || err);
-  res.status(500).send("Something broke!");
-});
 
-// Запуск сервера
+// Start the server
 const PORT = 9000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

@@ -134,38 +134,11 @@ const QuizPage = () => {
     if (step < 6) {
       setStep(step + 1);
     } else {
-      const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
-      if (!telegramUser || !telegramUser.username) {
-        console.error("Telegram user data is missing");
-        return;
-      }
 
-      const payload = {
-        username: telegramUser.username,
-        first_name: name,
-        dayofbirth: birthdate,
-        gender,
-        marital_status: relationshipStatus,
-        job: occupation,
-        objective: goals.join(","),
-      };
+
 
       try {
-        const response = await fetch("http://localhost:9000/api/users/create", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          const errorResponse = await response.json();
-          console.error("Error creating user:", errorResponse);
-          throw new Error(errorResponse.error || "Unknown error");
-        }
-
-        const result = await response.json();
-        console.log("User created successfully:", result);
         navigate("/profile");
       } catch (error) {
         console.error("Error on QuizPage:", error.message);
@@ -220,7 +193,7 @@ const QuizPage = () => {
               <label>
                 <input
                   type="radio"
-                  value="Мужской"
+                  value="1"
                   checked={gender === "Мужской"}
                   onChange={(e) => setGender(e.target.value)}
                 />
