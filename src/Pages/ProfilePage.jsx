@@ -161,85 +161,109 @@ const FooterIcon = styled.div`
   }
 `;
 
-const ProfilePage = () => {
+  const ProfilePage = () => {
+    const [userData, setUserData] = useState(null);
 
-  const [userData, setUserData] = useState(null);
+    useEffect(() => {
+      const fetchUserData = async () => {
+        const initData = window.Telegram.WebApp.initData;
+        const userId = JSON.parse(new URLSearchParams(initData).get("user")).id;
+  
+        try {
+          const response = await fetch(`http://localhost:9000/api/users/${userId}`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch user data");
+          }
+          const data = await response.json();
+          setUserData(data);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      };
+  
+      fetchUserData();
+    }, []);
+
+    if (!userData) {
+      return <div>Loading...</div>;
+    }
 
 
-  return (
-    <Background>
-      <ScrollableContainer>
-        <ProfileContainer>
-          <Avatar />
-          <Title>
-            Добрый день, {userData.first_name}
-            <span>id 2345678</span>
-          </Title>
-          <Section>
-            <SectionTitle>Личное</SectionTitle>
-            <InfoRow>
-              <span>Имя</span>
-              <span>Тимур</span>
-            </InfoRow>
-            <InfoRow>
-              <span>Дата рождения</span>
-              <span>25.11.1987</span>
-            </InfoRow>
-            <InfoRow>
-              <span>Пол</span>
-              <span>мужской</span>
-            </InfoRow>
-            <InfoRow>
-              <span>Профессия</span>
-              <span>предприниматель</span>
-            </InfoRow>
-            <InfoRow>
-              <span>Отношения</span>
-              <span>женат</span>
-            </InfoRow>
-            <InfoRow>
-              <span>Цель</span>
-              <span>5 целей</span>
-            </InfoRow>
-          </Section>
-          <Section>
-            <SectionTitle>Подписка</SectionTitle>
-            <InfoRow>
-              <span>Подписка</span>
-              <span>Оплачена</span>
-            </InfoRow>
-            <InfoRow>
-              <span>Окончание подписки</span>
-              <span>12.01.2025</span>
-            </InfoRow>
-          </Section>
+    return (
+      <Background>
+        <ScrollableContainer>
+          <ProfileContainer>
+            <Avatar />
+            <Title>
+            <h1>Welcome, {userData.first_name}</h1>
+              Добрый день, {userData.first_name}
+              <span>id 2345678</span>
+            </Title>
+            <Section>
+              <SectionTitle>Личное</SectionTitle>
+              <InfoRow>
+                <span>Имя</span>
+                <span>Тимур</span>
+              </InfoRow>
+              <InfoRow>
+                <span>Дата рождения</span>
+                <span>25.11.1987</span>
+              </InfoRow>
+              <InfoRow>
+                <span>Пол</span>
+                <span>мужской</span>
+              </InfoRow>
+              <InfoRow>
+                <span>Профессия</span>
+                <span>предприниматель</span>
+              </InfoRow>
+              <InfoRow>
+                <span>Отношения</span>
+                <span>женат</span>
+              </InfoRow>
+              <InfoRow>
+                <span>Цель</span>
+                <span>5 целей</span>
+              </InfoRow>
+            </Section>
+            <Section>
+              <SectionTitle>Подписка</SectionTitle>
+              <InfoRow>
+                <span>Подписка</span>
+                <span>Оплачена</span>
+              </InfoRow>
+              <InfoRow>
+                <span>Окончание подписки</span>
+                <span>12.01.2025</span>
+              </InfoRow>
+            </Section>
 
-          <Section>
-            <SectionTitle>Юридическое</SectionTitle>
-            <InfoRow>
-              <span>Политика конфиденциальности</span>
-              <a href="#">Открыть</a>
-            </InfoRow>
-            <InfoRow>
-              <span>Политика конфиденциальности</span>
-              <a href="#">Открыть</a>
-            </InfoRow>
-          </Section>
-          <ActionButtons>
-            <button>Выйти</button>
-            <button>Удалить</button>
-          </ActionButtons>
-        </ProfileContainer>
-      </ScrollableContainer>
-      <Footer>
-        <FooterIcon>👤</FooterIcon>
-        <FooterIcon>📄</FooterIcon>
-        <FooterIcon>🌙</FooterIcon>
-        <FooterIcon>❤️</FooterIcon>
-        <FooterIcon>🏠</FooterIcon>
-      </Footer>
-    </Background>
-  );
-};
+            <Section>
+              <SectionTitle>Юридическое</SectionTitle>
+              <InfoRow>
+                <span>Политика конфиденциальности</span>
+                <a href="#">Открыть</a>
+              </InfoRow>
+              <InfoRow>
+                <span>Политика конфиденциальности</span>
+                <a href="#">Открыть</a>
+              </InfoRow>
+            </Section>
+            <ActionButtons>
+              <button>Выйти</button>
+              <button>Удалить</button>
+            </ActionButtons>
+          </ProfileContainer>
+        </ScrollableContainer>
+        <Footer>
+          <FooterIcon>👤</FooterIcon>
+          <FooterIcon>📄</FooterIcon>
+          <FooterIcon>🌙</FooterIcon>
+          <FooterIcon>❤️</FooterIcon>
+          <FooterIcon>🏠</FooterIcon>
+        </Footer>
+      </Background>
+    );
+  };
 
-export default ProfilePage;
+  export default ProfilePage;

@@ -120,7 +120,7 @@ const CheckboxGroup = styled.div`
 
 
 // Основной компонент
-const QuizPage = () => {
+const QuizPage = async () => {
   const [step, setStep] = useState(1); // Текущий шаг
   const [occupation, setOccupation] = useState("");
   const [goals, setGoals] = useState([]);
@@ -130,7 +130,34 @@ const QuizPage = () => {
   const [gender, setGender] = useState("");
   const [relationshipStatus, setRelationshipStatus] = useState("");
   const navigate = useNavigate();
+  const initData = window.Telegram.WebApp.initData;
 
+  const payload = {
+    id: JSON.parse(new URLSearchParams(initData).get("user")).id,
+    userName: name,
+    dayOfBirth: birthdate,
+    Gender: gender === "Мужской" ? 1 : 2,
+    maritalStatus: relationshipStatus,
+    WhatIsJob: occupation,
+    yourObjective: goals.join(","),
+  };
+  try {
+    const response = await fetch("http://localhost:9000/api/users/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+  
+    const result = await response.json();
+    console.log("Profile created:", result);
+    navigate("/profile");
+  } catch (error) {
+    console.error("Error during profile creation:", error);
+  }
   const handleNext = async () => {
     if (step < 6) {
       setStep(step + 1);
