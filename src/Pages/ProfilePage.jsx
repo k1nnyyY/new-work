@@ -184,9 +184,6 @@ const FooterIcon = styled.div`
       fetchUserData();
     }, []);
 
-    if (!userData) {
-      return <div>Loading...</div>;
-    }
 
 
     return (

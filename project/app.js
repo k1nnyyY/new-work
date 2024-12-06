@@ -9,7 +9,8 @@ app.use(express.json());
 app.use(cors({
   origin: [
     'https://new-work-kohl.vercel.app', // Разрешить запросы с вашего фронтенда
-    'https://new-work-n776hw9pd-k1nnyyys-projects.vercel.app', // Другие допустимые источники
+    'https://new-work-n776hw9pd-k1nnyyys-projects.vercel.app',
+    'https://new-work-eeovtwyue-k1nnyyys-projects.vercel.app/welcome' // Другие допустимые источники
   ],
   methods: ['GET', 'POST'],
   credentials: true, // Если используете куки
