@@ -14,7 +14,7 @@ const RegistrationPage = () => {
       }
 
       // Отправляем initData на сервер
-      const response = await fetch("/api/check-user", {
+      const response = await fetch("http://localhost:9000/api/check-user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

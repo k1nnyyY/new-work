@@ -2,9 +2,16 @@ const express = require("express");
 const crypto = require("crypto");
 const supabase = require("./server");
 
+const cors = require("cors");
 const app = express();
 app.use(express.json());
 
+
+app.use(cors({
+  origin: "https://new-work-kohl.vercel.app", // Разрешите запросы только с вашего клиента
+  methods: "GET,POST,PUT,DELETE", // Укажите допустимые HTTP-методы
+  credentials: true, // Если требуется передача cookies
+}));
 // Проверка подлинности данных Telegram Web App
 function checkTelegramAuth(initData, botToken) {
   const secretKey = crypto.createHash("sha256").update(botToken).digest();
