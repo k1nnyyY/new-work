@@ -19,7 +19,7 @@ const Container = styled.div`
   max-width: 360px;
   padding: 30px 20px;
   text-align: center;
-  color: #fff; /* Белый текст */
+  color: ${({ theme }) => theme.color};
   border-radius: 20px;
   box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
   position: fixed;
@@ -76,7 +76,6 @@ const Button = styled.button`
   margin: 25% 0 25% 0;
 `;
 const WelcomePage = () => {
-  const { toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleNext = () => {
@@ -92,18 +91,6 @@ const WelcomePage = () => {
       <Container>
         <Image />
         <TextWrapper>
-          <p>
-            <strong>Ваш ID:</strong> 
-          </p>
-          <p>
-            <strong>Имя:</strong> 
-          </p>
-          <p>
-            <strong>Фамилия:</strong> 
-          </p>
-          <p>
-            <strong>Username:</strong>
-          </p>
           <Title>Добро пожаловать в Angelvoice!</Title>
           <Text>
             Избавьтесь от стресса и тревог с помощью медитаций и глубоких техник

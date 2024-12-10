@@ -23,7 +23,7 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between; /* Разделяем элементы */
   align-items: center; /* Выравниваем элементы по вертикали */
-  padding:2% 0 50% 0 ;
+  padding: 2% 0 50% 0;
 `;
 
 const Title = styled.h2`
@@ -49,16 +49,16 @@ const Label = styled.label`
 const Input = styled.input`
   width: 95%;
   padding: 15px;
-  margin-bottom: 20px; 
+  margin-bottom: 20px;
   border-radius: 20px;
-  border: none; 
+  border: none;
   background: rgba(255, 255, 255, 0.2);
   color: ${({ theme }) => theme.color};
   font-size: 16px;
   font-weight: 100;
 
   &::placeholder {
-  color: ${({ theme }) => theme.color};
+    color: ${({ theme }) => theme.color};
     font-weight: 100;
   }
 
@@ -91,7 +91,7 @@ const RadioGroup = styled.div`
 
   label {
     font-size: 16px;
-  color: ${({ theme }) => theme.color};
+    color: ${({ theme }) => theme.color};
     margin: 5px 0;
   }
 
@@ -108,7 +108,7 @@ const CheckboxGroup = styled.div`
 
   label {
     font-size: 16px;
-  color: ${({ theme }) => theme.color};
+    color: ${({ theme }) => theme.color};
     margin: 5px 0;
   }
 
@@ -116,8 +116,6 @@ const CheckboxGroup = styled.div`
     margin-right: 10px;
   }
 `;
-
-
 
 // Основной компонент
 const QuizPage = () => {
@@ -129,23 +127,49 @@ const QuizPage = () => {
   const [gender, setGender] = useState("");
   const [relationshipStatus, setRelationshipStatus] = useState("");
   const navigate = useNavigate();
-
   const handleNext = async () => {
     if (step < 6) {
       setStep(step + 1);
     } else {
-
-
-
-
+      // Данные для отправки
+      const requestData = {
+        username:"figk",
+        firstName: name,
+        dayofbirth: birthdate,
+        gender: gender,
+        maritalstatus: relationshipStatus,
+        whatisjob: occupation,
+        yourobjective: goals,
+        star: 0,
+        subscription: false,
+      };
+  
       try {
-        navigate("/profile");
+        const response = await fetch("http://localhost:9000/api/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Ошибка при отправке данных:", errorData.error);
+          alert("Не удалось завершить регистрацию. Попробуйте снова.");
+        } else {
+          const data = await response.json();
+          console.log("Данные успешно отправлены:", data);
+          alert("Регистрация завершена!");
+          navigate("/profile");
+        }
       } catch (error) {
-        console.error("Error on QuizPage:", error.message);
+        console.error("Ошибка при отправке данных:", error.message);
+        alert("Произошла ошибка. Попробуйте снова.");
       }
     }
   };
-
+  
   const handleGoalChange = (goal) => {
     if (goals.includes(goal)) {
       setGoals(goals.filter((g) => g !== goal));
@@ -155,154 +179,144 @@ const QuizPage = () => {
   };
 
   return (
-      <Container>
+    <Container>
       <Header>
         <Title>Регистрация</Title>
         <Step>шаг {step} из 6</Step>
       </Header>
-        {step === 1 && (
-          <>
-            <Label>
-              Введите имя
-            </Label>
-            <Input
-              type="text"
-              placeholder="Введите имя"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </>
-        )}
-        {step === 2 && (
-          <>
-            <Label>
-              Ваша дата рождения
-            </Label>
-            <Input
-              type="text"
-              placeholder="00.00.0000"
-              value={birthdate}
-              onChange={(e) => setBirthdate(e.target.value)}
-            />
-          </>
-        )}
-        {step === 3 && (
-          <>
-            <Label>Ваш пол</Label>
-            <RadioGroup>
-              <label>
+      {step === 1 && (
+        <>
+          <Label>Введите имя</Label>
+          <Input
+            type="text"
+            placeholder="Введите имя"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </>
+      )}
+      {step === 2 && (
+        <>
+          <Label>Ваша дата рождения</Label>
+          <Input
+            type="text"
+            placeholder="00.00.0000"
+            value={birthdate}
+            onChange={(e) => setBirthdate(e.target.value)}
+          />
+        </>
+      )}
+      {step === 3 && (
+        <>
+          <Label>Ваш пол</Label>
+          <RadioGroup>
+            <label>
+              <input
+                type="radio"
+                value="1"
+                checked={gender === "Мужской"}
+                onChange={(e) => setGender(e.target.value)}
+              />
+              Мужской
+            </label>
+            <label>
+              <input
+                type="radio"
+                value="Женский"
+                checked={gender === "Женский"}
+                onChange={(e) => setGender(e.target.value)}
+              />
+              Женский
+            </label>
+          </RadioGroup>
+        </>
+      )}
+      {step === 4 && (
+        <>
+          <Label>Семейное положение</Label>
+          <RadioGroup>
+            <label>
+              <input
+                type="radio"
+                value="Холост"
+                checked={relationshipStatus === "Холост"}
+                onChange={(e) => setRelationshipStatus(e.target.value)}
+              />
+              Холост
+            </label>
+            <label>
+              <input
+                type="radio"
+                value="Женат / замужем"
+                checked={relationshipStatus === "Женат / замужем"}
+                onChange={(e) => setRelationshipStatus(e.target.value)}
+              />
+              Женат / замужем
+            </label>
+            <label>
+              <input
+                type="radio"
+                value="В отношениях"
+                checked={relationshipStatus === "В отношениях"}
+                onChange={(e) => setRelationshipStatus(e.target.value)}
+              />
+              В отношениях
+            </label>
+          </RadioGroup>
+        </>
+      )}
+      {step === 5 && (
+        <>
+          <Label>Чем вы занимаетесь?</Label>
+          <RadioGroup>
+            {[
+              "Учусь",
+              "Предприниматель",
+              "В поиске работы",
+              "Фрилансер",
+              "Сотрудник в найме",
+              "Домохозяин / домохозяйка",
+            ].map((item) => (
+              <label key={item}>
                 <input
                   type="radio"
-                  value="1"
-                  checked={gender === "Мужской"}
-                  onChange={(e) => setGender(e.target.value)}
+                  value={item}
+                  checked={occupation === item}
+                  onChange={(e) => setOccupation(e.target.value)}
                 />
-                Мужской
+                {item}
               </label>
-              <label>
+            ))}
+          </RadioGroup>
+        </>
+      )}
+      {step === 6 && (
+        <>
+          <Label>Укажите ваши цели</Label>
+          <CheckboxGroup>
+            {[
+              "Убрать стресс / тревогу",
+              "Улучшить сон",
+              "Улучшить отношения",
+              "Понять себя",
+              "Саморазвитие",
+              "Достижение целей",
+            ].map((goal) => (
+              <label key={goal}>
                 <input
-                  type="radio"
-                  value="Женский"
-                  checked={gender === "Женский"}
-                  onChange={(e) => setGender(e.target.value)}
+                  type="checkbox"
+                  value={goal}
+                  checked={goals.includes(goal)}
+                  onChange={() => handleGoalChange(goal)}
                 />
-                Женский
+                {goal}
               </label>
-            </RadioGroup>
-          </>
-        )}
-        {step === 4 && (
-          <>
-            <Label>
-              Семейное положение
-            </Label>
-            <RadioGroup>
-              <label>
-                <input
-                  type="radio"
-                  value="Холост"
-                  checked={relationshipStatus === "Холост"}
-                  onChange={(e) => setRelationshipStatus(e.target.value)}
-                />
-                Холост
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  value="Женат / замужем"
-                  checked={relationshipStatus === "Женат / замужем"}
-                  onChange={(e) => setRelationshipStatus(e.target.value)}
-                />
-                Женат / замужем
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  value="В отношениях"
-                  checked={relationshipStatus === "В отношениях"}
-                  onChange={(e) => setRelationshipStatus(e.target.value)}
-                />
-                В отношениях
-              </label>
-            </RadioGroup>
-          </>
-        )}
-        {step === 5 && (
-          <>
-            <Label>
-              Чем вы занимаетесь?
-            </Label>
-            <RadioGroup>
-              {[
-                "Учусь",
-                "Предприниматель",
-                "В поиске работы",
-                "Фрилансер",
-                "Сотрудник в найме",
-                "Домохозяин / домохозяйка",
-              ].map((item) => (
-                <label key={item}>
-                  <input
-                    type="radio"
-                    value={item}
-                    checked={occupation === item}
-                    onChange={(e) => setOccupation(e.target.value)}
-                  />
-                  {item}
-                </label>
-              ))}
-            </RadioGroup>
-          </>
-        )}
-        {step === 6 && (
-          <>
-            <Label>
-              Укажите ваши цели
-            </Label>
-            <CheckboxGroup>
-              {[
-                "Убрать стресс / тревогу",
-                "Улучшить сон",
-                "Улучшить отношения",
-                "Понять себя",
-                "Саморазвитие",
-                "Достижение целей",
-              ].map((goal) => (
-                <label key={goal}>
-                  <input
-                    type="checkbox"
-                    value={goal}
-                    checked={goals.includes(goal)}
-                    onChange={() => handleGoalChange(goal)}
-                  />
-                  {goal}
-                </label>
-              ))}
-            </CheckboxGroup>
-          </>
-        )}
-        <Button onClick={handleNext}>Далее</Button>
-      </Container>
+            ))}
+          </CheckboxGroup>
+        </>
+      )}
+      <Button onClick={handleNext}>Далее</Button>
+    </Container>
   );
 };
 

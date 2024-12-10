@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-
+import Footer from "../Components/Footer";
+import Logo from "../assets/Ellipse 1.svg";
+import { useDispatch, useSelector } from "react-redux";
+import { setUser } from "../userSlice";
 
 // Основной фон страницы
 const Background = styled.div`
@@ -25,13 +28,52 @@ const ScrollableContainer = styled.div`
   /* Скрытие скроллбара */
   scrollbar-width: none; /* Для Firefox */
   -ms-overflow-style: none; /* Для Internet Explorer и Edge */
-  
+
   &::-webkit-scrollbar {
     display: none; /* Для Chrome, Safari и других WebKit-браузеров */
   }
 `;
 
 // Контейнер профиля
+// Аватар
+const Avatar = styled.div`
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: url("https://via.placeholder.com/80") center/cover no-repeat;
+  border: 2px solid ${({ theme }) => theme.color};
+`;
+// Заголовок
+const Title = styled.div`
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  color: ${({ theme }) => theme.color};
+
+  .greeting {
+    font-size: 16px;
+    margin-bottom: 5px;
+  }
+
+  .user-id {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+`;
+
+const ProfileContainerData = styled.div`
+  display: flex;
+  align-items: center; /* Центрируем элементы по вертикали */
+  justify-content: space-between; /* Распределяем элементы по сторонам */
+  width: 100%;
+  max-width: 360px;
+  padding: 20px;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 0 auto; /* Центрируем по вертикали */
+`;
+
 const ProfileContainer = styled.div`
   width: 100%;
   max-width: 360px;
@@ -42,31 +84,26 @@ const ProfileContainer = styled.div`
   -webkit-backdrop-filter: blur(15px);
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  margin-bottom:35%;
+  margin-top: 10%; /* Adjust to align properly */
+  margin-bottom: 20%; /* Adjust to align properly */
 `;
 
-// Аватар
-const Avatar = styled.div`
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: url("https://via.placeholder.com/80") center/cover no-repeat;
-  margin: 0 auto 15px;
-  border: 2px solid ${({ theme }) => theme.color};
-`;
+const TextContainer = styled.div`
+  display: flex;
+  flex-direction: column; /* Располагаем элементы вертикально */
+  text-align: right; /* Выравниваем текст справа */
+  margin-left: auto; /* Отталкиваем от аватара */
 
-// Заголовок
-const Title = styled.div`
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 18px;
-  font-weight: bold;
-  color: ${({ theme }) => theme.color};
-
-  span {
-    display: block;
-    font-size: 14px;
+  .greeting {
+    font-size: 16px;
+    margin-bottom: 5px;
+    font-weight: bold;
     color: ${({ theme }) => theme.color};
+  }
+
+  .user-id {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
   }
 `;
 
@@ -132,132 +169,106 @@ const ActionButtons = styled.div`
   }
 `;
 
-// Футер с иконками
-const Footer = styled.div`
-  width: 100%;
-  max-width: 360px;
-  position: fixed; /* Закрепляет футер */
-  bottom: 0;
-  left: 50%;
-  border-radius: 20px 20px 0 0;
-  transform: translateX(-50%);
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 10px 0;
-  background-color: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-`;
+const ProfilePage = () => {
+  const dispatch = useDispatch();
+  const userData = useSelector((state) => state.user);
 
-const FooterIcon = styled.div`
-  font-size: 24px;
-  color: ${({ theme }) => theme.color};
-  cursor: pointer;
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const username = localStorage.getItem("username") || "k1nnyyY"; // Фиксированный username
+        const response = await fetch(
+          `http://localhost:9000/api/check-user?username=${username}`
+        );
+        const data = await response.json();
 
-  &:hover {
-    color: rgba(255, 255, 255, 0.8);
-  }
-`;
-
-  const ProfilePage = () => {
-    const [userData, setUserData] = useState(null);
-
-    useEffect(() => {
-      const fetchUserData = async () => {
-        const initData = window.Telegram.WebApp.initData;
-        const userId = JSON.parse(new URLSearchParams(initData).get("user")).id;
-  
-        try {
-          const response = await fetch(`http://localhost:9000/api/users/${userId}`);
-          if (!response.ok) {
-            throw new Error("Failed to fetch user data");
-          }
-          const data = await response.json();
-          setUserData(data);
-        } catch (error) {
-          console.error("Error fetching user data:", error);
+        if (response.ok) {
+          dispatch(setUser(data.user));
+        } else {
+          console.error("Ошибка загрузки данных:", data.message);
         }
-      };
-  
-      fetchUserData();
-    }, []);
+      } catch (err) {
+        console.error("Ошибка подключения к серверу:", err);
+      }
+    };
 
+    fetchUserData();
+  }, [dispatch]);
 
+  useEffect(() => {
+    console.log("Redux state for user in ProfilePage:", userData);
+  }, [userData]);
+  return (
+    <Background>
+      <ScrollableContainer>
+        <ProfileContainer>
+          <ProfileContainerData>
+            <Avatar style={{ backgroundImage: `url(${Logo})` }} />
+            <TextContainer>
+              <div className="greeting">
+                Добрый день, {userData.firstName || "Гость"}
+              </div>
+              <div className="user-id">ID: {userData.id || "—"}</div>
+            </TextContainer>
+          </ProfileContainerData>
+          <Section>
+            <SectionTitle>Личное</SectionTitle>
+            <InfoRow>
+              <span>Имя</span>
+              <span>{userData.firstName || "Не указано"}</span>
+            </InfoRow>
+            <InfoRow>
+              <span>Дата рождения</span>
+              <span>{userData.dayOfBirth || "Не указано"}</span>
+            </InfoRow>
+            <InfoRow>
+              <span>Пол</span>
+              <span>{userData.gender || "Не указано"}</span>
+            </InfoRow>
+            <InfoRow>
+              <span>Профессия</span>
+              <span>{userData.whatisjob || "Не указано"}</span>
+            </InfoRow>
+            <InfoRow>
+              <span>Отношения</span>
+              <span>{userData.maritalStatus || "Не указано"}</span>
+            </InfoRow>
+            <InfoRow>
+              <span>Цели</span>
+              <span>{userData.yourObjective || "Не указано"}</span>
+            </InfoRow>
+          </Section>
+          <Section>
+            <SectionTitle>Подписка</SectionTitle>
+            <InfoRow>
+              <span>Подписка</span>
+              <span>{userData.subscription ? "Оплачена" : "Не оплачена"}</span>
+            </InfoRow>
+            <InfoRow>
+              <span>Окончание подписки</span>
+              <span>{userData.expiredSubscription || "Не оплачена"}</span>
+            </InfoRow>
+          </Section>
+          <Section>
+            <SectionTitle>Юридическое</SectionTitle>
+            <InfoRow>
+              <span>Политика конфиденциальности</span>
+              <a href="#">Открыть</a>
+            </InfoRow>
+            <InfoRow>
+              <span>Политика конфиденциальности</span>
+              <a href="#">Открыть</a>
+            </InfoRow>
+          </Section>
+          <ActionButtons>
+            <button>Выйти</button>
+            <button>Удалить</button>
+          </ActionButtons>
+        </ProfileContainer>
+      </ScrollableContainer>
+      <Footer />
+    </Background>
+  );
+};
 
-    return (
-      <Background>
-        <ScrollableContainer>
-          <ProfileContainer>
-            <Avatar />
-            <Title>
-            </Title>
-            <Section>
-              <SectionTitle>Личное</SectionTitle>
-              <InfoRow>
-                <span>Имя</span>
-                <span>Тимур</span>
-              </InfoRow>
-              <InfoRow>
-                <span>Дата рождения</span>
-                <span>25.11.1987</span>
-              </InfoRow>
-              <InfoRow>
-                <span>Пол</span>
-                <span>мужской</span>
-              </InfoRow>
-              <InfoRow>
-                <span>Профессия</span>
-                <span>предприниматель</span>
-              </InfoRow>
-              <InfoRow>
-                <span>Отношения</span>
-                <span>женат</span>
-              </InfoRow>
-              <InfoRow>
-                <span>Цель</span>
-                <span>5 целей</span>
-              </InfoRow>
-            </Section>
-            <Section>
-              <SectionTitle>Подписка</SectionTitle>
-              <InfoRow>
-                <span>Подписка</span>
-                <span>Оплачена</span>
-              </InfoRow>
-              <InfoRow>
-                <span>Окончание подписки</span>
-                <span>12.01.2025</span>
-              </InfoRow>
-            </Section>
-
-            <Section>
-              <SectionTitle>Юридическое</SectionTitle>
-              <InfoRow>
-                <span>Политика конфиденциальности</span>
-                <a href="#">Открыть</a>
-              </InfoRow>
-              <InfoRow>
-                <span>Политика конфиденциальности</span>
-                <a href="#">Открыть</a>
-              </InfoRow>
-            </Section>
-            <ActionButtons>
-              <button>Выйти</button>
-              <button>Удалить</button>
-            </ActionButtons>
-          </ProfileContainer>
-        </ScrollableContainer>
-        <Footer>
-          <FooterIcon>👤</FooterIcon>
-          <FooterIcon>📄</FooterIcon>
-          <FooterIcon>🌙</FooterIcon>
-          <FooterIcon>❤️</FooterIcon>
-          <FooterIcon>🏠</FooterIcon>
-        </Footer>
-      </Background>
-    );
-  };
-
-  export default ProfilePage;
+export default ProfilePage;
